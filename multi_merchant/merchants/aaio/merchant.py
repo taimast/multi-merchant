@@ -48,26 +48,25 @@ class AaioPay(BaseMerchant):
             fail_url: str = "https://example.com/fail",
             **kwargs
     ) -> Invoice:
-        pass
 
-    payment_id = uuid.uuid4().hex
-    payment_url = self.client.create_payment(
-        payment_id,
-        amount=amount,
-        currency=currency,
-        description=description,
-    )
+        payment_id = uuid.uuid4().hex
+        payment_url = self.client.create_payment(
+            payment_id,
+            amount=amount,
+            currency=currency,
+            description=description,
+        )
 
-    return Invoice(
-        user_id=user_id,
-        amount=float(amount),
-        currency=currency,
-        invoice_id=payment_id,
-        pay_url=payment_url,
-        description=description,
-        merchant=self.merchant,
-        expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
-    )
+        return Invoice(
+            user_id=user_id,
+            amount=float(amount),
+            currency=currency,
+            invoice_id=payment_id,
+            pay_url=payment_url,
+            description=description,
+            merchant=self.merchant,
+            expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
+        )
 
 
 async def is_paid(self, invoice_id: str) -> bool:
