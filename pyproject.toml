@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "multi-merchant"
+version = "0.1.0"
+description = ""
+authors = ["taimast <charlskenno@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiohttp = ">=3.9.0"
+pydantic = ">=2.4.1"
+sqlalchemy = ">=2.0.30"
+
+pycryptopay-sdk = {git = "https://github.com/taimast/pyCryptoPayAPI.git"}
+pypayment = "^1.7.14"
+glqiwiapi = {git = "https://github.com/dipwave/glQiwiApi.git"}
+stripe = "^8.7.0"
+loguru = ">=0.7.0"
+walletpay = "^1.3.1"
+aaioapi = "^2.5.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
