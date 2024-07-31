@@ -16,7 +16,7 @@ MerchantAnnotated = Annotated[
     Qiwi | YooKassa | CryptoPay | CryptoCloud | Cryptomus | BetaTransferPay | PayokPay | AaioPay,
     Field(discriminator="merchant")
 ]
-
+BaseInvoice = Invoice
 __all__ = (
     'MerchantAnnotated',
     'Qiwi',
@@ -27,7 +27,7 @@ __all__ = (
     'BetaTransferPay',
     'PayokPay',
     'AaioPay',
-    'Invoice',
+    'BaseInvoice',
     'Currency',
     'Status'
 )
