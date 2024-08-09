@@ -46,7 +46,7 @@ class Invoice:
     amount: Mapped[float | None]
     invoice_id: Mapped[str] = mapped_column(String(50), index=True)
     expire_at: Mapped[datetime.datetime | None] = mapped_column(
-        default=lambda: func.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
+        default=lambda: datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
     )
     extra_data: Mapped[dict] = mapped_column(JSON, default={})
     pay_url: Mapped[str | None] = mapped_column(String(255))
