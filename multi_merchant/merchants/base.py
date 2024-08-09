@@ -61,6 +61,15 @@ class BaseMerchant(BaseModel, ABC):
     def serialize_api_key(self, v: SecretStr) -> str:
         return v.get_secret_value()
 
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close_session()
+
+
+
     async def get_session(self):
         if self.session is None or self.session.closed:
             self.session = ClientSession(headers=self.headers)

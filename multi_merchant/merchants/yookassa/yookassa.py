@@ -9,9 +9,8 @@ from typing import Optional, Literal
 
 from pydantic import BaseModel, validator
 
-from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
-from ..models import Invoice
-
+from multi_merchant.merchants.base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
+from multi_merchant.models import Invoice
 
 
 class Amount(BaseModel):
@@ -20,12 +19,12 @@ class Amount(BaseModel):
 
 
 class Confirmation(BaseModel):
-    confirmation_url: Optional[str]
+    confirmation_url: Optional[str] = None
     type: str = "redirect"
 
 
 class ConfirmationRequest(BaseModel):
-    return_url: Optional[str]
+    return_url: Optional[str] = None
     type: str = "redirect"
 
 
@@ -65,6 +64,7 @@ class YooPaymentRequest(BaseModel):
     confirmation: ConfirmationRequest | None
     capture: bool = True
     receipt: Receipt | None = None
+    metadata: dict | None = None
 
     # необязательный expire_at. Не указано в документации. Всегда равен 1 часу
     # "expires_at": str(datetime.datetime.now(TIME_ZONE) + datetime.timedelta(minutes=15))
@@ -75,6 +75,23 @@ class YooPaymentRequest(BaseModel):
             v = f"Product {values.get('amount')}"
         return v
 
+    @classmethod
+    def create_payment(
+            cls,
+            amount: int | float | str,
+            currency: str,
+            metadata: dict = None,
+            return_url: str = None,
+            description: str = None
+    ) -> typing.Self:
+        return cls(
+            amount=Amount(currency=currency, value=str(amount)),
+            confirmation=ConfirmationRequest(return_url=return_url),
+            description=description,
+            receipt=Receipt(items=[Item(amount=Amount(currency=currency, value=str(float(amount))))]),
+            metadata=metadata
+        )
+
 
 class YooPayment(YooPaymentRequest):
     id: uuid.UUID
@@ -84,9 +101,12 @@ class YooPayment(YooPaymentRequest):
     status: Status
     recipient: Recipient | None = None
     income_amount: Amount | None = None
+    metadata: dict | None = None
 
     def is_paid(self) -> bool:
         return self.paid
+
+
 
 
 class YooKassa(BaseMerchant):
@@ -110,12 +130,13 @@ class YooKassa(BaseMerchant):
             currency: str = "RUB",
             return_url: str = "https://t.me/"  # todo L2 14.08.2022 19:02 taima: прописать url
     ) -> Invoice:
-        data = YooPaymentRequest(
-            amount=Amount(currency=currency, value=str(amount)),
-            confirmation=ConfirmationRequest(return_url=return_url),
+        data = YooPaymentRequest.create_payment(
+            amount=amount,
+            currency=currency,
+            return_url=return_url,
             description=description,
-            receipt=Receipt(items=[Item(amount=Amount(currency=currency, value=str(float(amount))))])
         )
+
         idempotence_key = {"Idempotence-Key": str(uuid.uuid4())}
         response = await self.make_request(
             "POST",

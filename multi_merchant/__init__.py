@@ -9,7 +9,7 @@ from multi_merchant.merchants.cryptomus import Cryptomus
 from multi_merchant.merchants.cryptopay import CryptoPay
 from multi_merchant.merchants.payok.merchant import PayokPay
 from multi_merchant.merchants.qiwi import Qiwi
-from multi_merchant.merchants.yookassa import YooKassa
+from multi_merchant.merchants.yookassa.yookassa import YooKassa
 from multi_merchant.models.invoice import Invoice, Currency, Status
 
 MerchantAnnotated = Annotated[
