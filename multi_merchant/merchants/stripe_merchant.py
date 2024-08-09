@@ -8,9 +8,7 @@ from pydantic import validator
 from stripe import StripeClient, checkout
 
 from base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
-
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice, Currency
+from ..models import Invoice, Currency
 
 
 class StripeMerchant(BaseMerchant):
@@ -65,14 +63,15 @@ class StripeMerchant(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: Currency = "USD",
             description: str | None = None,
             **kwargs
     ) -> Invoice:
-        from ..models.invoice import Invoice
         invoice = await self.create_invoice_object(amount, currency, description)
         expired_at = datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
-        return Invoice(
+
+        return InvoiceClass(
             user_id=user_id,
             amount=amount,
             currency=currency,
@@ -87,22 +86,3 @@ class StripeMerchant(BaseMerchant):
         invoice = await self.cp.checkout.sessions.retrieve(invoice_id)
         return invoice.payment_status == "paid"
 
-
-import asyncio
-
-
-async def main():
-    api_key = "api_key"
-    stripe = StripeMerchant(api_key=api_key, merchant=MerchantEnum.STRIPE)
-    invoice = await stripe.create_invoice_object(100, "usd", "test")
-    print(invoice.url)
-    while True:
-        invoice = stripe.cp.checkout.sessions.retrieve(invoice.id)
-        print(invoice.payment_status)
-        if invoice.payment_status == "paid":
-            break
-        await asyncio.sleep(1)
-
-
-if __name__ == '__main__':
-    asyncio.run(main())

@@ -10,9 +10,7 @@ from pypayment import PaymentStatus
 from multi_merchant.merchants.base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
 from multi_merchant.merchants.betatransfer.betatransfer import BetaTrans
 from multi_merchant.merchants.betatransfer.methods import BTPaymentTypeRUB
-
-if typing.TYPE_CHECKING:
-    from multi_merchant.models.invoice import Invoice
+from ...models import Invoice
 
 
 class BetaTransferPay(BaseMerchant):
@@ -38,6 +36,7 @@ class BetaTransferPay(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: str = "RUB",
             method: BTPaymentTypeRUB = BTPaymentTypeRUB.YooMoney,
             description: str = "Test Order",
@@ -46,7 +45,6 @@ class BetaTransferPay(BaseMerchant):
             fail_url: str = "https://example.com/fail",
             **kwargs
     ) -> Invoice:
-        from ...models.invoice import Invoice
         payment = BetaTrans(
             amount,
             url_success=success_url,
@@ -54,7 +52,7 @@ class BetaTransferPay(BaseMerchant):
             payment_type=method,
         )
 
-        return Invoice(
+        return InvoiceClass(
             user_id=user_id,
             amount=float(amount),
             currency=currency,

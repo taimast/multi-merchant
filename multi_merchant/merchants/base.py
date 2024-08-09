@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import abc
+import typing
 import zoneinfo
 from abc import ABC
 from enum import StrEnum
-from typing import Optional, Any, Literal, TYPE_CHECKING
+from typing import Optional, Any, Literal
 
 from aiohttp import ClientSession
 from pydantic import BaseModel, SecretStr, field_serializer
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from ..models.invoice import Invoice
 
 # seconds
@@ -79,6 +80,7 @@ class BaseMerchant(BaseModel, ABC):
             self,
             user_id: int,
             amount: int | float | str,
+            invoice_class: typing.Type[Invoice],
             **kwargs
     ) -> Invoice:
         pass

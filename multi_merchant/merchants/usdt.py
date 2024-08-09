@@ -10,9 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseMerchant
 
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice, Currency
-    from ...db.models import User
+from ..models.invoice import Invoice, Currency
 
 
 class State(StrEnum):
@@ -75,9 +73,9 @@ class USDT(BaseMerchant):
 
     async def create_invoice(
             self,
-            session: AsyncSession,
-            user: User,
+            user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: Currency = "USDT",
             **kwargs
     ) -> Invoice:

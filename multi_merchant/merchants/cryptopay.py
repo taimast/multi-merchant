@@ -8,9 +8,7 @@ from CryptoPayAPI import CryptoPay as CryptoPayAPI, schemas
 from pydantic import validator, field_serializer
 
 from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
-
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice
+from ..models import Invoice
 
 
 class CryptoPay(BaseMerchant):
@@ -29,11 +27,12 @@ class CryptoPay(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
+
             currency: schemas.Assets = schemas.Assets.USDT,
             description: str | None = None,
             **kwargs
     ) -> Invoice:
-        from ..models.invoice import Invoice
         invoice = await self.cp.create_invoice(
             asset=currency,
             amount=amount,
@@ -42,7 +41,8 @@ class CryptoPay(BaseMerchant):
             # paid_btn_url='https://example.com'
         )
         expired_at = datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
-        return Invoice(
+
+        return InvoiceClass(
             user_id=user_id,
             amount=amount,
             currency=currency,

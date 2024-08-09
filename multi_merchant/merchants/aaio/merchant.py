@@ -10,9 +10,7 @@ from pydantic import validator, field_serializer
 
 from multi_merchant.merchants.base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
 from multi_merchant.merchants.betatransfer.betatransfer import BetaTrans
-
-if typing.TYPE_CHECKING:
-    from multi_merchant.models.invoice import Invoice
+from ...models import Invoice
 
 
 class AaioPay(BaseMerchant):
@@ -41,6 +39,7 @@ class AaioPay(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: str = "RUB",
             description: str = "Order",
             email: str = None,
@@ -48,7 +47,6 @@ class AaioPay(BaseMerchant):
             fail_url: str = "https://example.com/fail",
             **kwargs
     ) -> Invoice:
-
         payment_id = uuid.uuid4().hex
         payment_url = self.client.create_payment(
             payment_id,
@@ -57,7 +55,7 @@ class AaioPay(BaseMerchant):
             description=description,
         )
 
-        return Invoice(
+        return InvoiceClass(
             user_id=user_id,
             amount=float(amount),
             currency=currency,
@@ -68,7 +66,6 @@ class AaioPay(BaseMerchant):
             expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
         )
 
-
-async def is_paid(self, invoice_id: str) -> bool:
-    info = self.client.get_payment_info(invoice_id)
-    return info['status'] == "success"
+    async def is_paid(self, invoice_id: str) -> bool:
+        info = self.client.get_payment_info(invoice_id)
+        return info['status'] == "success"

@@ -10,9 +10,8 @@ from typing import Optional, Literal
 from pydantic import BaseModel, validator
 
 from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
+from ..models import Invoice
 
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice
 
 
 class Amount(BaseModel):
@@ -106,11 +105,11 @@ class YooKassa(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             description: str = None,
             currency: str = "RUB",
             return_url: str = "https://t.me/"  # todo L2 14.08.2022 19:02 taima: прописать url
     ) -> Invoice:
-        from ..models.invoice import Invoice
         data = YooPaymentRequest(
             amount=Amount(currency=currency, value=str(amount)),
             confirmation=ConfirmationRequest(return_url=return_url),
@@ -127,7 +126,7 @@ class YooKassa(BaseMerchant):
         if response.get("type") == "error":
             raise Exception(response)
         yoo_payment = YooPayment(**response)
-        return Invoice(
+        return InvoiceClass(
             user_id=user_id,
             amount=float(yoo_payment.amount.value),
             currency=yoo_payment.amount.currency,

@@ -10,8 +10,7 @@ from pydantic import BaseModel
 
 from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
 
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice
+from ..models import Invoice
 
 
 class Currency(str, Enum):
@@ -32,7 +31,7 @@ class CryptoPaymentRequest(BaseModel):
     shop_id: str
     amount: float
     order_id: str | None = None
-    currency: Currency = Currency.RUB
+    currency: str = Currency.RUB
     email: str | None = None
     # expire_at - 24 часа
 
@@ -47,7 +46,7 @@ class CryptoPaymentResponse(BaseModel):
     invoice_id: str
     status: Status
     pay_url: str
-    currency: CryptoCurrency
+    currency: str
 
 
 class StatusInvoice(str, Enum):
@@ -55,6 +54,7 @@ class StatusInvoice(str, Enum):
     PAID = "paid"
     PARTIAL = "partial"
     CANCELED = "canceled"
+    OVERPAID = "overpaid"
 
 
 class CryptoPayment(BaseModel):
@@ -77,11 +77,12 @@ class CryptoCloud(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
+
             currency: Currency = Currency.RUB,
             order_id: str = None,
             email: str = None,
     ) -> Invoice:
-        from ..models.invoice import Invoice
         data = CryptoPaymentRequest(
             amount=amount,
             currency=Currency(currency),
@@ -93,7 +94,7 @@ class CryptoCloud(BaseMerchant):
         response = CryptoPaymentResponse(**response)
         if response.status == Status.SUCCESS:
             logger.info(f"Success create invoice {response.invoice_id}")
-            return Invoice(
+            return InvoiceClass(
                 user_id=user_id,
                 amount=amount,
                 currency=currency,
@@ -113,4 +114,8 @@ class CryptoCloud(BaseMerchant):
         )
         response = CryptoPayment(**response)
         # logger.debug(f"Response from {self.status_url} is {response}")
-        return response.status == Status.SUCCESS and response.status_invoice == StatusInvoice.PAID
+        return response.status == Status.SUCCESS and response.status_invoice in (
+            StatusInvoice.PAID,
+            StatusInvoice.OVERPAID,
+        )
+

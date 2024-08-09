@@ -9,9 +9,7 @@ from WalletPay import AsyncWalletPayAPI
 from pydantic import validator
 
 from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
-
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice
+from ..models import Invoice
 
 
 class WalletPay(BaseMerchant):
@@ -32,12 +30,12 @@ class WalletPay(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: str = "USD",
             description: str = "Test Order",
             email: str = None,
             **kwargs
     ) -> Invoice:
-        from ..models.invoice import Invoice
         external_id = str(uuid.uuid4())
         order = await self.client.create_order(
             amount=amount,
@@ -48,7 +46,7 @@ class WalletPay(BaseMerchant):
             customer_telegram_user_id=str(user_id),
         )
 
-        return Invoice(
+        return InvoiceClass(
             user_id=user_id,
             amount=float(amount),
             currency=currency,
@@ -60,5 +58,5 @@ class WalletPay(BaseMerchant):
         )
 
     async def is_paid(self, invoice_id: str) -> bool:
-        order_preview = self.api.get_order_preview(order_id=invoice_id)
+        order_preview = await self.client.get_order_preview(order_id=invoice_id)
         return order_preview.status == "PAID"

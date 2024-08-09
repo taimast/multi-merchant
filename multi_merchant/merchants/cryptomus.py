@@ -8,15 +8,9 @@ from typing import Literal, Optional, Any
 from pydantic import Field, validator
 
 from .base import BaseMerchant, MerchantEnum
+from ..models.invoice import Invoice, Currency
+from pyCryptomusAPI import Invoice as CryptomusInvoice, pyCryptomusAPI
 
-if typing.TYPE_CHECKING:
-    from ..models.invoice import Invoice, Currency
-
-try:
-    from pyCryptomusAPI import Invoice as CryptomusInvoice, pyCryptomusAPI
-except ImportError:
-    pyCryptomusAPI = Any
-    CryptomusInvoice = Any
 
 
 class Cryptomus(BaseMerchant):
@@ -37,19 +31,21 @@ class Cryptomus(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
+
             currency: 'Currency' = "USD",
             description: str | None = None,
             **kwargs
     ) -> Invoice:
-        from ..models.invoice import Invoice
         order_id = uuid.uuid4().hex
         invoice: CryptomusInvoice = await asyncio.to_thread(
             self.client.create_invoice,
             amount=amount,
+            currency=currency,
             order_id=order_id,
-            currency=currency
         )
-        return Invoice(
+
+        return InvoiceClass(
             user_id=user_id,
             amount=amount,
             currency=currency,

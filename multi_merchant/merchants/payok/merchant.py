@@ -11,9 +11,7 @@ from pypayment import PaymentStatus
 from multi_merchant.merchants.base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
 from multi_merchant.merchants.betatransfer.methods import BTPaymentTypeRUB
 from multi_merchant.merchants.payok.aiopayok import Payok
-
-if typing.TYPE_CHECKING:
-    from multi_merchant.models.invoice import Invoice
+from ...models import Invoice
 
 
 class PayokPay(BaseMerchant):
@@ -44,6 +42,7 @@ class PayokPay(BaseMerchant):
             self,
             user_id: int,
             amount: int | float | str,
+            InvoiceClass: typing.Type[Invoice],
             currency: str = "RUB",
             method: BTPaymentTypeRUB = BTPaymentTypeRUB.YooMoney,
             description: str = "Order",
@@ -61,7 +60,7 @@ class PayokPay(BaseMerchant):
             desc=description
         )
 
-        return Invoice(
+        return InvoiceClass(
             user_id=user_id,
             amount=float(amount),
             currency=currency,
@@ -72,10 +71,9 @@ class PayokPay(BaseMerchant):
             expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
         )
 
-
-async def is_paid(self, invoice_id: str) -> bool:
-    try:
-        transaction = await self.client.get_transactions(invoice_id)
-        return transaction['transaction_status'] == PaymentStatus.PAID.value
-    except Exception as e:
-        return False
+    async def is_paid(self, invoice_id: str) -> bool:
+        try:
+            transaction = await self.client.get_transactions(invoice_id)
+            return transaction['transaction_status'] == PaymentStatus.PAID.value
+        except Exception as e:
+            return False

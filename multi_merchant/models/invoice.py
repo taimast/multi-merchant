@@ -7,8 +7,11 @@ from typing import Self
 from sqlalchemy import String, func, select, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, selectinload
+from sqlalchemy.orm import declarative_base
 
 from multi_merchant.merchants.base import MerchantEnum, PAYMENT_LIFETIME
+
+Base = declarative_base()
 
 
 # класс с методами для работы с мерчантами
@@ -36,15 +39,17 @@ class Status(StrEnum):
     FAIL = "fail"
 
 
-class Invoice:
-    __tablename__ = "invoices"
+class Invoice(Base):
+    __abstract__ = True
+
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(index=True)
 
     currency: Mapped[str | None]
     amount: Mapped[float | None]
     invoice_id: Mapped[str] = mapped_column(String(50), index=True)
     expire_at: Mapped[datetime.datetime | None] = mapped_column(
-        default=func.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
+        default_factory=lambda: func.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
     )
     extra_data: Mapped[dict] = mapped_column(JSON, default={})
     pay_url: Mapped[str | None] = mapped_column(String(255))
