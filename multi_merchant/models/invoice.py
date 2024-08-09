@@ -7,11 +7,8 @@ from typing import Self
 from sqlalchemy import String, func, select, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, selectinload
-from sqlalchemy.orm import declarative_base
 
 from multi_merchant.merchants.base import MerchantEnum, PAYMENT_LIFETIME
-
-Base = declarative_base()
 
 
 # класс с методами для работы с мерчантами
@@ -39,7 +36,7 @@ class Status(StrEnum):
     FAIL = "fail"
 
 
-class Invoice(Base):
+class Invoice:
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(primary_key=True)
