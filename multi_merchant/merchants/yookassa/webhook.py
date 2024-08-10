@@ -1,8 +1,5 @@
-import typing
 from enum import StrEnum
 
-from aiohttp import web
-from aiohttp.web_routedef import AbstractRouteDef
 from pydantic import BaseModel
 
 
@@ -53,20 +50,3 @@ class Notification(BaseModel):
     type: str
     event: str
     object: PaymentObject
-
-
-async def start_server(
-        routes: typing.Iterable[AbstractRouteDef],
-        host: str = "0.0.0.0",
-        port: int = 85
-):
-    app = web.Application()
-    app.add_routes(routes)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(
-        runner,
-        host,
-        port,
-    )
-    await site.start()
