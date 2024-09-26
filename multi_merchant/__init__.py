@@ -9,25 +9,38 @@ from multi_merchant.merchants.cryptomus import Cryptomus
 from multi_merchant.merchants.cryptopay import CryptoPay
 from multi_merchant.merchants.payok.merchant import PayokPay
 from multi_merchant.merchants.qiwi import Qiwi
-from multi_merchant.merchants.yookassa.yookassa import YooKassa
+from multi_merchant.merchants.yookassa.merchant import YooKassa
+from multi_merchant.merchants.yoomoney.merchant import YooMoney
 from multi_merchant.models.invoice import Invoice, Currency, Status
 
+
 MerchantAnnotated = Annotated[
-    Qiwi | YooKassa | CryptoPay | CryptoCloud | Cryptomus | BetaTransferPay | PayokPay | AaioPay,
-    Field(discriminator="merchant")
+    Qiwi
+    | YooKassa
+    | YooMoney
+    | CryptoPay
+    | CryptoCloud
+    | Cryptomus
+    | BetaTransferPay
+    | PayokPay
+    | AaioPay,
+    Field(discriminator="merchant"),
 ]
+
+
 BaseInvoice = Invoice
 __all__ = (
-    'MerchantAnnotated',
-    'Qiwi',
-    'YooKassa',
-    'CryptoPay',
-    'CryptoCloud',
-    'Cryptomus',
-    'BetaTransferPay',
-    'PayokPay',
-    'AaioPay',
-    'BaseInvoice',
-    'Currency',
-    'Status'
+    "MerchantAnnotated",
+    "Qiwi",
+    "YooKassa",
+    "YooMoney",
+    "CryptoPay",
+    "CryptoCloud",
+    "Cryptomus",
+    "BetaTransferPay",
+    "PayokPay",
+    "AaioPay",
+    "BaseInvoice",
+    "Currency",
+    "Status",
 )

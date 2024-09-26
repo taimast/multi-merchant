@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from enum import StrEnum
-from typing import Self
+from typing import TYPE_CHECKING, Optional, Self
 
 from sqlalchemy import String, func, select, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,8 +13,10 @@ from multi_merchant.merchants.base import MerchantEnum, PAYMENT_LIFETIME
 
 # класс с методами для работы с мерчантами
 
+
 class Currency(StrEnum):
     """Currency codes."""
+
     USD = "USD"
     RUB = "RUB"
     EUR = "EUR"
@@ -30,6 +32,7 @@ class Currency(StrEnum):
 
 class Status(StrEnum):
     """Invoice status."""
+
     PENDING = "pending"
     SUCCESS = "success"
     EXPIRED = "expired"
@@ -61,6 +64,24 @@ class Invoice:
 
     merchant: Mapped[MerchantEnum | None]
 
+    if TYPE_CHECKING:
+
+        def __init__(
+            self,
+            user_id: int,
+            amount: float,
+            currency: str,
+            invoice_id: str,
+            pay_url: Optional[str] = None,
+            description: Optional[str] = None,
+            merchant: Optional[MerchantEnum] = None,
+            expire_at: Optional[datetime.datetime] = None,
+            extra_data: dict = {},
+            status: Status = Status.PENDING,
+            order_id: Optional[str] = None,
+            email: Optional[str] = None,
+        ): ...
+
     def __str__(self):
         return f"[{self.__class__.__name__}] {self.user} {self.amount} {self.currency}"
 
@@ -77,26 +98,30 @@ class Invoice:
 
     @classmethod
     async def get_last_invoice(
-            cls,
-            session: AsyncSession,
-            user_id: int,
-            amount: int | float | str,
-            currency: Currency,
-            merchant: MerchantEnum,
+        cls,
+        session: AsyncSession,
+        user_id: int,
+        amount: int | float | str,
+        currency: Currency,
+        merchant: MerchantEnum,
     ) -> Self | None:
         """Get last unpaid invoice."""
         return (
-            await session.execute(
-                select(cls)
-                .where(cls.user_id == user_id)
-                .where(cls.amount == float(amount))
-                .where(cls.currency == currency)
-                .where(cls.merchant == merchant)
-                .where(cls.status == Status.PENDING)
-                .where(cls.expire_at > func.now())
-                .order_by(cls.id.desc())
+            (
+                await session.execute(
+                    select(cls)
+                    .where(cls.user_id == user_id)
+                    .where(cls.amount == float(amount))
+                    .where(cls.currency == currency)
+                    .where(cls.merchant == merchant)
+                    .where(cls.status == Status.PENDING)
+                    .where(cls.expire_at > func.now())
+                    .order_by(cls.id.desc())
+                )
             )
-        ).unique().scalar_one_or_none()
+            .unique()
+            .scalar_one_or_none()
+        )
 
     # todo L1 TODO 22.04.2023 22:56 taima: Do successfully_paid and check_payment methods in one method
     async def successfully_paid(self):

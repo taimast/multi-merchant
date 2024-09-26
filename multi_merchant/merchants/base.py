@@ -5,7 +5,7 @@ import typing
 import zoneinfo
 from abc import ABC
 from enum import StrEnum
-from typing import Optional, Any, Literal
+from typing import Optional, Any, Literal, Union
 
 from aiohttp import ClientSession
 from pydantic import BaseModel, SecretStr, field_serializer
@@ -20,6 +20,7 @@ TIME_ZONE = zoneinfo.ZoneInfo("Europe/Moscow")
 
 # todo L1 15.10.2022 2:07 taima: add to config
 # класс с методами для работы с мерчантами
+
 
 class MerchantEnum(StrEnum):
     NONE = "none"
@@ -38,13 +39,31 @@ class MerchantEnum(StrEnum):
     AAIO = "aaio"
 
 
+MerchantUnion = Union[
+    Literal[MerchantEnum.NONE],
+    Literal[MerchantEnum.CRYPTO_CLOUD],
+    Literal[MerchantEnum.USDT],
+    Literal[MerchantEnum.QIWI],
+    Literal[MerchantEnum.YOOMONEY],
+    Literal[MerchantEnum.YOOKASSA],
+    Literal[MerchantEnum.CRYPTO_PAY],
+    Literal[MerchantEnum.CRYPTOMUS],
+    Literal[MerchantEnum.WALLET_PAY],
+    Literal[MerchantEnum.STRIPE],
+    Literal[MerchantEnum.TRIBUTE],
+    Literal[MerchantEnum.BETA_TRANSFER_PAY],
+    Literal[MerchantEnum.PAYOK],
+    Literal[MerchantEnum.AAIO],
+]
+
+
 class BaseMerchant(BaseModel, ABC):
     shop_id: Optional[str] = None
     api_key: SecretStr
     create_url: Optional[str] = None
     status_url: Optional[str] = None
     session: Optional[ClientSession] = None
-    merchant: Literal[MerchantEnum.NONE]
+    merchant: MerchantUnion = MerchantEnum.NONE
 
     class Config:
         arbitrary_types_allowed = True
@@ -61,14 +80,11 @@ class BaseMerchant(BaseModel, ABC):
     def serialize_api_key(self, v: SecretStr) -> str:
         return v.get_secret_value()
 
-
     async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close_session()
-
-
 
     async def get_session(self):
         if self.session is None or self.session.closed:
@@ -86,11 +102,11 @@ class BaseMerchant(BaseModel, ABC):
 
     @abc.abstractmethod
     async def create_invoice(
-            self,
-            user_id: int,
-            amount: int | float | str,
-            invoice_class: typing.Type[Invoice],
-            **kwargs
+        self,
+        user_id: int,
+        amount: int | float | str,
+        InvoiceClass: typing.Type[Invoice],
+        # **kwargs,
     ) -> Invoice:
         pass
 
