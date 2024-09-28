@@ -8,7 +8,7 @@ from sqlalchemy import String, func, select, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, selectinload
 
-from multi_merchant.merchants.base import MerchantEnum, PAYMENT_LIFETIME
+from multi_merchant.merchants.base import TIME_ZONE, MerchantEnum, PAYMENT_LIFETIME
 
 
 # класс с методами для работы с мерчантами
@@ -49,7 +49,8 @@ class Invoice:
     amount: Mapped[float | None]
     invoice_id: Mapped[str] = mapped_column(String(50), index=True)
     expire_at: Mapped[datetime.datetime | None] = mapped_column(
-        default=lambda: datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
+        default=lambda: datetime.datetime.now(TIME_ZONE)
+        + datetime.timedelta(seconds=PAYMENT_LIFETIME)
     )
     extra_data: Mapped[dict] = mapped_column(JSON, default={})
     pay_url: Mapped[str | None] = mapped_column(String(255))

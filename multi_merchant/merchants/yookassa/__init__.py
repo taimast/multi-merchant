@@ -1,4 +1,4 @@
-from .yookassa import YooKassa, YooPayment, YooPaymentRequest
+from .merchant import YooKassa, YooPayment, YooPaymentRequest
 
 
 __all__ = (
