@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from pydantic import Field
-
+from multi_merchant.merchants.base import BaseMerchant, MerchantEnum, MerchantUnion
 from multi_merchant.merchants.aaio.merchant import AaioPay
 from multi_merchant.merchants.betatransfer import BetaTransferPay
 from multi_merchant.merchants.cryptocloud import CryptoCloud
@@ -30,7 +30,10 @@ MerchantAnnotated = Annotated[
 
 BaseInvoice = Invoice
 __all__ = (
+    "BaseMerchant",
     "MerchantAnnotated",
+    "MerchantEnum",
+    "MerchantUnion",
     "Qiwi",
     "YooKassa",
     "YooMoney",
