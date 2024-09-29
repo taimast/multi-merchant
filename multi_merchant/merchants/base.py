@@ -10,6 +10,7 @@ from typing import Optional, Any, Literal, Union
 from aiohttp import ClientSession
 from pydantic import BaseModel, SecretStr, field_serializer
 
+
 if typing.TYPE_CHECKING:
     from ..models.invoice import Invoice
 
@@ -18,8 +19,27 @@ PAYMENT_LIFETIME = 60 * 60
 TIME_ZONE = zoneinfo.ZoneInfo("Europe/Moscow")
 
 
+# Alias for Amount
+Amount: typing.TypeAlias = float | int | str
+
 # todo L1 15.10.2022 2:07 taima: add to config
 # класс с методами для работы с мерчантами
+
+
+class Currency(StrEnum):
+    """Currency codes."""
+
+    USD = "USD"
+    RUB = "RUB"
+    EUR = "EUR"
+    GBP = "GBP"
+
+    USDT = "USDT"
+    BTC = "BTC"
+    TON = "TON"
+    ETH = "ETH"
+    USDC = "USDC"
+    BUSD = "BUSD"
 
 
 class MerchantEnum(StrEnum):
@@ -104,8 +124,10 @@ class BaseMerchant(BaseModel, ABC):
     async def create_invoice(
         self,
         user_id: int,
-        amount: int | float | str,
+        amount: Amount,
         InvoiceClass: typing.Type[Invoice],
+        currency: Currency = Currency.RUB,
+        description: str | None = None,
         # **kwargs,
     ) -> Invoice:
         pass

@@ -8,7 +8,7 @@ import uuid
 
 from pydantic import model_validator
 
-from ..base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME, MerchantUnion
+from ..base import Amount, BaseMerchant, Currency, MerchantEnum, PAYMENT_LIFETIME, MerchantUnion
 from yoomoney import Client, Quickpay
 from ...models import Invoice
 
@@ -57,14 +57,16 @@ class YooMoney(BaseMerchant):
     async def create_invoice(
         self,
         user_id: int,
-        amount: int | float | str,
+        amount: Amount,
         InvoiceClass: typing.Type[Invoice],
-        description: str = "Sponsor this project",
         currency: str = "RUB",
+        description: str | None = None,
         return_url: str = "https://t.me/",  # todo L2 14.08.2022 19:02 taima: прописать url
     ) -> Invoice:
         invoive_id = str(uuid.uuid4())
         amount = float(amount)
+
+        description = description or f"Sponsor this project {invoive_id}"
         qp = await asyncio.to_thread(self.create_quickpay, amount, invoive_id, description)
 
         return InvoiceClass(

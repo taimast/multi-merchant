@@ -2,25 +2,31 @@ from __future__ import annotations
 
 import datetime
 import typing
-from enum import Enum
-from typing import Literal
+from enum import Enum, StrEnum
+from typing import Literal, Optional
 
 from loguru import logger
 from pydantic import BaseModel
 
-from .base import BaseMerchant, MerchantEnum, PAYMENT_LIFETIME
+from .base import (
+    Amount,
+    BaseMerchant,
+    MerchantEnum,
+    PAYMENT_LIFETIME,
+    MerchantUnion,
+)
 
 from ..models import Invoice
 
 
-class Currency(str, Enum):
+class Currency(StrEnum):
     RUB = "RUB"
     USD = "USD"
     EUR = "EUR"
     GBP = "GBP"
 
 
-class CryptoCurrency(str, Enum):
+class CryptoCurrency(StrEnum):
     BTC = "BTC"
     ETH = "ETH"
     LTC = "LTC"
@@ -64,25 +70,27 @@ class CryptoPayment(BaseModel):
 
 
 class CryptoCloud(BaseMerchant):
-    create_url: str = "https://api.cryptocloud.plus/v1/invoice/create"
-    status_url: str = "https://api.cryptocloud.plus/v1/invoice/info"
+    create_url: Optional[str] = "https://api.cryptocloud.plus/v1/invoice/create"
+    status_url: Optional[str] = "https://api.cryptocloud.plus/v1/invoice/info"
     id_prefix: str = "INV-"
-    merchant: Literal[MerchantEnum.CRYPTO_CLOUD]
+    merchant: MerchantUnion = MerchantEnum.CRYPTO_CLOUD
 
     @property
     def headers(self) -> dict:
         return {"Authorization": f"Token {self.api_key.get_secret_value()}"}
 
     async def create_invoice(
-            self,
-            user_id: int,
-            amount: int | float | str,
-            InvoiceClass: typing.Type[Invoice],
-
-            currency: Currency = Currency.RUB,
-            order_id: str = None,
-            email: str = None,
+        self,
+        user_id: int,
+        amount: Amount,
+        InvoiceClass: typing.Type[Invoice],
+        currency: str = Currency.RUB,
+        description: str | None = None,
+        order_id: str | None = None,
+        email: str | None = None,
     ) -> Invoice:
+        amount = float(amount)
+
         data = CryptoPaymentRequest(
             amount=amount,
             currency=Currency(currency),
@@ -103,7 +111,7 @@ class CryptoCloud(BaseMerchant):
                 order_id=order_id,
                 email=email,
                 merchant=self.merchant,
-                expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME)
+                expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME),
             )
         logger.error(f"Error create invoice {response}")
         raise Exception(f"Error create invoice {response}")
@@ -118,4 +126,3 @@ class CryptoCloud(BaseMerchant):
             StatusInvoice.PAID,
             StatusInvoice.OVERPAID,
         )
-

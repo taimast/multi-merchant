@@ -8,26 +8,15 @@ from sqlalchemy import String, func, select, JSON
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, selectinload
 
-from multi_merchant.merchants.base import TIME_ZONE, MerchantEnum, PAYMENT_LIFETIME
+from multi_merchant.merchants.base import (
+    TIME_ZONE,
+    MerchantEnum,
+    PAYMENT_LIFETIME,
+    Currency,
+)
 
 
 # класс с методами для работы с мерчантами
-
-
-class Currency(StrEnum):
-    """Currency codes."""
-
-    USD = "USD"
-    RUB = "RUB"
-    EUR = "EUR"
-    GBP = "GBP"
-
-    USDT = "USDT"
-    BTC = "BTC"
-    TON = "TON"
-    ETH = "ETH"
-    USDC = "USDC"
-    BUSD = "BUSD"
 
 
 class Status(StrEnum):

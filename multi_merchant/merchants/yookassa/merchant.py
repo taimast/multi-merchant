@@ -11,9 +11,11 @@ from pydantic import BaseModel, validator
 
 from multi_merchant.merchants.base import (
     BaseMerchant,
+    Currency,
     MerchantEnum,
     PAYMENT_LIFETIME,
     MerchantUnion,
+    Amount as BaseAmount,
 )
 from multi_merchant.models import Invoice
 
@@ -85,9 +87,9 @@ class YooPaymentRequest(BaseModel):
         cls,
         amount: int | float | str,
         currency: str,
-        metadata: dict = None,
-        return_url: str = None,
-        description: str = None,
+        metadata: dict | None = None,
+        return_url: str | None = None,
+        description: str | None = None,
     ) -> typing.Self:
         return cls(
             amount=Amount(currency=currency, value=str(amount)),
@@ -131,12 +133,13 @@ class YooKassa(BaseMerchant):
     async def create_invoice(
         self,
         user_id: int,
-        amount: int | float | str,
+        amount: BaseAmount,
         InvoiceClass: typing.Type[Invoice],
-        description: str = None,
-        currency: str = "RUB",
+        currency: Currency = Currency.RUB,
+        description: str | None = None,
         return_url: str = "https://t.me/",  # todo L2 14.08.2022 19:02 taima: прописать url
     ) -> Invoice:
+        description = description or f"Product {amount} {currency} for user ID{user_id}"
         data = YooPaymentRequest.create_payment(
             amount=amount,
             currency=currency,
@@ -146,7 +149,10 @@ class YooKassa(BaseMerchant):
 
         idempotence_key = {"Idempotence-Key": str(uuid.uuid4())}
         response = await self.make_request(
-            "POST", self.create_url, json=data.model_dump(), headers=idempotence_key
+            "POST",
+            self.create_url,
+            json=data.model_dump(),
+            headers=idempotence_key,
         )
         if response.get("type") == "error":
             raise Exception(response)
@@ -162,11 +168,11 @@ class YooKassa(BaseMerchant):
             expire_at=datetime.datetime.now() + datetime.timedelta(seconds=PAYMENT_LIFETIME),
         )
 
-    async def is_paid(self, invoice_id: uuid.UUID) -> bool:
+    async def is_paid(self, invoice_id: str) -> bool:
         """Проверка статуса платежа"""
         return (await self.get_invoice(invoice_id)).paid
 
-    async def get_invoice(self, invoice_id: uuid.UUID) -> YooPayment:
+    async def get_invoice(self, invoice_id: str) -> YooPayment:
         """Получение информации о платеже"""
         res = await self.make_request("GET", f"{self.create_url}/{invoice_id}")
         return YooPayment.parse_obj(res)
