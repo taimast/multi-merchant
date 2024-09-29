@@ -12,6 +12,7 @@ from pydantic import BaseModel, validator
 from multi_merchant.merchants.base import (
     BaseMerchant,
     Currency,
+    InvoiceT,
     MerchantEnum,
     PAYMENT_LIFETIME,
     MerchantUnion,
@@ -134,11 +135,11 @@ class YooKassa(BaseMerchant):
         self,
         user_id: int,
         amount: BaseAmount,
-        InvoiceClass: typing.Type[Invoice],
+        InvoiceClass: typing.Type[InvoiceT],
         currency: Currency = Currency.RUB,
         description: str | None = None,
         return_url: str = "https://t.me/",  # todo L2 14.08.2022 19:02 taima: прописать url
-    ) -> Invoice:
+    ) -> InvoiceT:
         description = description or f"Product {amount} {currency} for user ID{user_id}"
         data = YooPaymentRequest.create_payment(
             amount=amount,

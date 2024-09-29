@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from .base import (
     Amount,
     BaseMerchant,
+    InvoiceT,
     MerchantEnum,
     PAYMENT_LIFETIME,
     MerchantUnion,
@@ -83,12 +84,12 @@ class CryptoCloud(BaseMerchant):
         self,
         user_id: int,
         amount: Amount,
-        InvoiceClass: typing.Type[Invoice],
+        InvoiceClass: typing.Type[InvoiceT],
         currency: str = Currency.RUB,
         description: str | None = None,
         order_id: str | None = None,
         email: str | None = None,
-    ) -> Invoice:
+    ) -> InvoiceT:
         amount = float(amount)
 
         data = CryptoPaymentRequest(

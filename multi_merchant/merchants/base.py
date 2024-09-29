@@ -5,7 +5,7 @@ import typing
 import zoneinfo
 from abc import ABC
 from enum import StrEnum
-from typing import Optional, Any, Literal, Union
+from typing import Optional, Any, Literal, TypeVar, Union
 
 from aiohttp import ClientSession
 from pydantic import BaseModel, SecretStr, field_serializer
@@ -76,6 +76,8 @@ MerchantUnion = Union[
     Literal[MerchantEnum.AAIO],
 ]
 
+InvoiceT = TypeVar("InvoiceT", bound="Invoice")
+
 
 class BaseMerchant(BaseModel, ABC):
     shop_id: Optional[str] = None
@@ -125,11 +127,11 @@ class BaseMerchant(BaseModel, ABC):
         self,
         user_id: int,
         amount: Amount,
-        InvoiceClass: typing.Type[Invoice],
+        InvoiceClass: typing.Type[InvoiceT],
         currency: Currency = Currency.RUB,
         description: str | None = None,
         # **kwargs,
-    ) -> Invoice:
+    ) -> InvoiceT:
         pass
 
     @abc.abstractmethod

@@ -8,7 +8,15 @@ import uuid
 
 from pydantic import model_validator
 
-from ..base import Amount, BaseMerchant, Currency, MerchantEnum, PAYMENT_LIFETIME, MerchantUnion
+from ..base import (
+    Amount,
+    BaseMerchant,
+    Currency,
+    InvoiceT,
+    MerchantEnum,
+    PAYMENT_LIFETIME,
+    MerchantUnion,
+)
 from yoomoney import Client, Quickpay
 from ...models import Invoice
 
@@ -58,11 +66,11 @@ class YooMoney(BaseMerchant):
         self,
         user_id: int,
         amount: Amount,
-        InvoiceClass: typing.Type[Invoice],
+        InvoiceClass: typing.Type[InvoiceT],
         currency: str = "RUB",
         description: str | None = None,
         return_url: str = "https://t.me/",  # todo L2 14.08.2022 19:02 taima: прописать url
-    ) -> Invoice:
+    ) -> InvoiceT:
         invoive_id = str(uuid.uuid4())
         amount = float(amount)
 
