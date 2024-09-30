@@ -23,8 +23,8 @@ from ...models import Invoice
 
 class YooMoney(BaseMerchant):
     client: Client
-    merchant: Literal[MerchantEnum.YOOMONEY] = MerchantEnum.YOOMONEY
     receiver: Optional[str] = None
+    merchant: Literal[MerchantEnum.YOOMONEY]
 
     @model_validator(mode="before")
     @classmethod

@@ -74,7 +74,7 @@ class CryptoCloud(BaseMerchant):
     create_url: Optional[str] = "https://api.cryptocloud.plus/v1/invoice/create"
     status_url: Optional[str] = "https://api.cryptocloud.plus/v1/invoice/info"
     id_prefix: str = "INV-"
-    merchant: Literal[MerchantEnum.CRYPTO_CLOUD] = MerchantEnum.CRYPTO_CLOUD
+    merchant: Literal[MerchantEnum.CRYPTO_CLOUD]
 
     @property
     def headers(self) -> dict:

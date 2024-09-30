@@ -13,7 +13,8 @@ from pyCryptomusAPI import Invoice as CryptomusInvoice, pyCryptomusAPI
 
 
 class Cryptomus(BaseMerchant):
-    merchant: MerchantUnion = MerchantEnum.CRYPTOMUS
+    merchant: Literal[MerchantEnum.CRYPTOMUS]
+
     create_url: Optional[str] = "https://api.cryptomus.com/v1/payment"
     status_url: Optional[str] = "https://api.cryptomus.com/v1/payment/info"
     client: Optional[pyCryptomusAPI] = Field(None, validate_default=True)

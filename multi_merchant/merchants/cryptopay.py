@@ -15,23 +15,22 @@ class CryptoPay(BaseMerchant):
     cp: CryptoPayAPI | None = None
     merchant: Literal[MerchantEnum.CRYPTO_PAY]
 
-    @validator('cp', always=True)
+    @validator("cp", always=True)
     def validate_cp(cls, v, values):
         return v or CryptoPayAPI(values.get("api_key").get_secret_value())
 
-    @field_serializer('cp')
+    @field_serializer("cp")
     def serialize_cp(cp: CryptoPayAPI | None) -> Any:
         return None
 
     async def create_invoice(
-            self,
-            user_id: int,
-            amount: int | float | str,
-            InvoiceClass: typing.Type[Invoice],
-
-            currency: schemas.Assets = schemas.Assets.USDT,
-            description: str | None = None,
-            **kwargs
+        self,
+        user_id: int,
+        amount: int | float | str,
+        InvoiceClass: typing.Type[Invoice],
+        currency: schemas.Assets = schemas.Assets.USDT,
+        description: str | None = None,
+        **kwargs,
     ) -> Invoice:
         invoice = await self.cp.create_invoice(
             asset=currency,
@@ -50,12 +49,11 @@ class CryptoPay(BaseMerchant):
             pay_url=invoice.pay_url,
             description=description,
             merchant=self.merchant,
-            expire_at=expired_at
+            expire_at=expired_at,
         )
 
     async def is_paid(self, invoice_id: str) -> bool:
         invoices = await self.cp.get_invoices(
-            invoice_ids=invoice_id,
-            status=schemas.InvoiceStatus.PAID
+            invoice_ids=invoice_id, status=schemas.InvoiceStatus.PAID
         )
         return invoices[0].status == schemas.InvoiceStatus.PAID

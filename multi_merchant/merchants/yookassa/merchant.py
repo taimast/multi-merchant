@@ -119,7 +119,7 @@ class YooPayment(YooPaymentRequest):
 
 class YooKassa(BaseMerchant):
     create_url: Optional[str] = "https://api.yookassa.ru/v3/payments"
-    merchant: Literal[MerchantEnum.YOOKASSA] = MerchantEnum.YOOKASSA
+    merchant: Literal[MerchantEnum.YOOKASSA]
 
     @property
     def headers(self) -> dict:

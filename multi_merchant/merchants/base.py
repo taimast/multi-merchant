@@ -85,7 +85,7 @@ class BaseMerchant(BaseModel, ABC):
     create_url: Optional[str] = None
     status_url: Optional[str] = None
     session: Optional[ClientSession] = None
-    merchant: MerchantUnion = MerchantEnum.NONE
+    merchant: Literal[MerchantEnum.NONE]
 
     class Config:
         arbitrary_types_allowed = True

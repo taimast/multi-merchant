@@ -23,7 +23,7 @@ class PayokPay(BaseMerchant):
     api_id: int
     secret: str
     client: Optional[Payok] = None
-    merchant: MerchantUnion = MerchantEnum.PAYOK
+    merchant: Literal[MerchantEnum.PAYOK]
 
     @validator("client", always=True)
     def client_validator(cls, v, values):
