@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import typing
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 import uuid
 
 from pydantic import model_validator
@@ -23,7 +23,7 @@ from ...models import Invoice
 
 class YooMoney(BaseMerchant):
     client: Client
-    merchant: MerchantUnion = MerchantEnum.YOOMONEY
+    merchant: Literal[MerchantEnum.YOOMONEY] = MerchantEnum.YOOMONEY
     receiver: Optional[str] = None
 
     @model_validator(mode="before")
