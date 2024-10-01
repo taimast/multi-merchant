@@ -40,7 +40,7 @@ class YooMoney(BaseMerchant):
             return self.receiver
 
         account_info = self.client.account_info()
-        accoint_number: str = account_info.account_number  # type: ignore
+        accoint_number: str = account_info.account  # type: ignore
         self.receiver = accoint_number
         return self.receiver
 
